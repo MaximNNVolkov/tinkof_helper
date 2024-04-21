@@ -2,3 +2,4 @@ aiogram==3.4.1
 pydantic-settings==2.2.1
 tinkoff-investments==0.2.0b97
 pandas==2.2.2
+sqlalchemy==2.0.29
