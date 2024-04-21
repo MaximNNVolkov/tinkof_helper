@@ -7,7 +7,7 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.client.bot import DefaultBotProperties
 
 from config_reader import config
-from handlers import comands
+from handlers import comands, bonds
 from middlewares.base import ChatActionMiddleware
 
 
@@ -20,9 +20,11 @@ async def main():
     bot = Bot(token=Token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
     dp.update.outer_middleware(ChatActionMiddleware())
-    dp.include_routers(comands.router)
+    dp.include_routers(bonds.router_bonds, comands.router)
     await bot.set_my_commands([types.BotCommand(command="start", description="Перезапустить бота"),
-                               types.BotCommand(command="help", description="Помощь")])
+                               types.BotCommand(command="help", description="Помощь"),
+                               types.BotCommand(command="bonds", description="Оценка облигации")
+                               ])
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

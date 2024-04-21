@@ -35,3 +35,5 @@ class User:
 
     def get_url(self):
         return ''.join(['<a href="', self.url, '">', self.first_name, '</a>'])
+
+

@@ -2,6 +2,7 @@ import app_logger as log
 from aiogram import types
 from defs.classes import User
 from aiogram.fsm.context import FSMContext
+from fsm.fsm_base import StateBonds
 
 
 log = log.get_logger(__name__)
@@ -24,3 +25,9 @@ async def user_msg(message: types.Message, state: FSMContext):
     log.info('сообщение от пользователя' + u.info_user())
     await message.answer('user_msg')
 
+
+async def bonds_yeld(message: types.Message, state: FSMContext):
+    u = User(message.from_user)
+    log.info(f'{u.info_user()} оценка бондов')
+    await state.set_state(StateBonds.enter_ticker)
+    await message.answer('Пришлите тикер облигации')
