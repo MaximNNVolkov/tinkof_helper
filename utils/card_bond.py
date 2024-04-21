@@ -26,7 +26,7 @@ class CardBond:
             fmt.text(''),
             fmt.text(f'Цена: {self.price:.2f}'),
             fmt.text(f'НКД: {self.aci_value:.2f}'),
-            fmt.text(f'Дата погашения: {self.maturity_date}'),
+            fmt.text(f'Дата погашения: {self.maturity_date.date()}'),
             fmt.text(''),
             fmt.text(f'Доход: {self.val:.2f}'),
             fmt.text(f'Доходность: {self.profit*100:.1f}%'),
