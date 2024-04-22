@@ -1,6 +1,6 @@
 from tinkoff.invest import Client
 from tinkoff.invest.constants import INVEST_GRPC_API
-from tinkoff.invest.schemas import RiskLevel
+from tinkoff.invest.schemas import RiskLevel, GetBondEventsRequest, EventType
 from tinkoff.invest.utils import quotation_to_decimal
 from utils.token import TOKEN
 import datetime
@@ -26,10 +26,12 @@ class Bond:
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid).events
 
-    # def get_instrument(self):
-    #     with Client(TOKEN, target=INVEST_GRPC_API) as client:
-    #         self.instrument = client.instruments.get_instrument_by(id=self.uid,
-    #                                                                id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_UID).instrument
+    def get_bonds_event(self):
+        with Client(TOKEN, target=INVEST_GRPC_API) as client:
+            self.bond_event = client.instruments.get_bond_events(request=GetBondEventsRequest(from_=datetime.datetime.now(),
+                instrument_id=self.uid, type=EventType.EVENT_TYPE_CALL,
+            ))
+            print(self.uid, self.bond_event)
 
     def get_last_price(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
@@ -41,7 +43,7 @@ class Bond:
         co = 0
         for c in self.cuopons:
             if c.fix_date.date() > datetime.datetime.now().date():
-                s = float(quotation_to_decimal(c.pay_one_bond))
+                s += float(quotation_to_decimal(c.pay_one_bond))
                 co += 1
         if s > 0:
             self.invest = (self.last_price + self.aci_value)

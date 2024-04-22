@@ -1,5 +1,5 @@
 import aiogram.utils.markdown as fmt
-from utils.bond import Bond
+from utils.bonds.bond import Bond
 from tinkoff.invest.schemas import RiskLevel
 
 

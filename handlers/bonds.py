@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram import filters
 from fsm.fsm_base import StateBonds
-from defs.bonds import get_tickers
+from utils.bonds.bond_def import get_tickers
 
 
 router_bonds = Router()

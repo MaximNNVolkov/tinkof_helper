@@ -4,8 +4,8 @@ from aiogram import types
 from aiogram.fsm.context import FSMContext
 from defs.classes import User
 from defs.accounts import Accounts
-from utils.bond import Bond
-from utils.card_bond import CardBond
+from utils.bonds.bond import Bond
+from utils.bonds.card_bond import CardBond
 
 
 log = log.get_logger(__name__)
@@ -19,7 +19,8 @@ async def get_tickers(message: types.Message, state: FSMContext):
         ticker = ticker[1:]
     ac = Accounts()
     instruments = ac.get_instruments(ticker=ticker)
-    if type(instruments) == "<class 'str'>":
+    print(type(instruments))
+    if str(type(instruments)) == "<class 'str'>":
         await message.answer(instruments)
         await message.answer('Введите правильный тикер')
     elif instruments.type.iloc[0] != 'bonds':
@@ -42,6 +43,8 @@ async def get_tickers(message: types.Message, state: FSMContext):
         b.get_last_price()
         b.coupon_fix()
         card_bond = CardBond(b)
+        be = b.get_bonds_event()
+        print(be)
         await message.answer(card_bond.get_text(), disable_web_page_preview=True)
         await message.delete()
         await state.clear()
