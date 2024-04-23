@@ -19,7 +19,6 @@ async def get_tickers(message: types.Message, state: FSMContext):
         ticker = ticker[1:]
     ac = Accounts()
     instruments = ac.get_instruments(ticker=ticker)
-    print(type(instruments))
     if str(type(instruments)) == "<class 'str'>":
         await message.answer(instruments)
         await message.answer('Введите правильный тикер')
