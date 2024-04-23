@@ -4,6 +4,7 @@ from tinkoff.invest.schemas import RiskLevel, GetBondEventsRequest, EventType
 from tinkoff.invest.utils import quotation_to_decimal
 from utils.token import TOKEN
 import datetime
+import pandas as pd
 
 
 class Bond:
@@ -28,10 +29,13 @@ class Bond:
 
     def get_bonds_event(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
-            self.bond_event = client.instruments.get_bond_events(request=GetBondEventsRequest(from_=datetime.datetime.now(),
+            self.bond_event = client.instruments.get_bond_events(request=GetBondEventsRequest(
                 instrument_id=self.uid, type=EventType.EVENT_TYPE_CALL,
             ))
-            print(self.uid, self.bond_event)
+            self.oferta = None
+            df = pd.DataFrame(self.bond_event.events)
+            if not(df.empty):
+                self.oferta = df[df.event_type == 2].pay_date.iloc[0]
 
     def get_last_price(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
@@ -46,9 +50,11 @@ class Bond:
                 s += float(quotation_to_decimal(c.pay_one_bond))
                 co += 1
         if s > 0:
-            self.coupons_sum = s
-            self.coupons_count = co
             self.invest = (self.last_price + self.aci_value)
             self.val = (self.nominal + s) - self.invest
             self.profit = self.val / self.invest
-            self.annual_yield = self.profit / (self.maturity_date.date() - datetime.datetime.now().date()).days * 365
+            if self.oferta:
+                date_ = self.oferta.date()
+            else:
+                date_ = self.maturity_date.date()
+            self.annual_yield = self.profit / (date_ - datetime.datetime.now().date()).days * 365

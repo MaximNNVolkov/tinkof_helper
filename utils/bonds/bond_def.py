@@ -23,9 +23,11 @@ async def get_tickers(message: types.Message, state: FSMContext):
     if str(type(instruments)) == "<class 'str'>":
         await message.answer(instruments)
         await message.answer('Введите правильный тикер')
+        await state.clear()
     elif instruments.type.iloc[0] != 'bonds':
         await message.answer(f'Тикер {ticker} не является облигацией')
         await message.answer('Введите правильный тикер')
+        await state.clear()
     else:
         instr = ac.get_bond_by_uid(uid=instruments.uid.iloc[0])
         b = Bond(name=instr.name,
@@ -41,11 +43,9 @@ async def get_tickers(message: types.Message, state: FSMContext):
                  risk_level=instr.risk_level)
         b.get_coupons()
         b.get_last_price()
+        b.get_bonds_event()
         b.coupon_fix()
         card_bond = CardBond(b)
-        be = b.get_bonds_event()
-        print(be)
-        await message.answer(b.coupon_sum, b.coupon_count)
         await message.answer(card_bond.get_text(), disable_web_page_preview=True)
         await message.delete()
         await state.clear()
