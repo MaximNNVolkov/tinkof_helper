@@ -45,7 +45,7 @@ async def get_tickers(message: types.Message, state: FSMContext):
         card_bond = CardBond(b)
         be = b.get_bonds_event()
         print(be)
-        wait message.answer(b.coupon_sum, b.coupon_count)
+        await message.answer(b.coupon_sum, b.coupon_count)
         await message.answer(card_bond.get_text(), disable_web_page_preview=True)
         await message.delete()
         await state.clear()
