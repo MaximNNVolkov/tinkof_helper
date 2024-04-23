@@ -46,6 +46,8 @@ class Bond:
                 s += float(quotation_to_decimal(c.pay_one_bond))
                 co += 1
         if s > 0:
+            self.coupons_sum = s
+            self.coupons_count = co
             self.invest = (self.last_price + self.aci_value)
             self.val = (self.nominal + s) - self.invest
             self.profit = self.val / self.invest
