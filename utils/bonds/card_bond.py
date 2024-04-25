@@ -18,6 +18,13 @@ class CardBond:
         self.maturity_date = bond.maturity_date
         self.nominal = bond.nominal
         self.oferta = bond.oferta
+        self.floating_coupon_flag = bond.floating_coupon_flag
+        self.amortization_flag = bond.amortization_flag
+
+    def get_param(self, param: bool) -> str:
+        if param:
+            return 'Да'
+        return 'Нет'
 
     def get_text(self) -> fmt.text:
         if self.oferta:
@@ -36,6 +43,9 @@ class CardBond:
             fmt.text(f'Доход: {self.val:.2f}'),
             fmt.text(f'Доходность: {self.profit*100:.1f}%'),
             fmt.text(f'Доходность годовых: {self.annual_yield*100:.1f}%'),
+            fmt.text(''),
+            fmt.text(f'Переменный купон: {self.get_param(self.floating_coupon_flag)}'),
+            fmt.text(f'Амортизация: {self.get_param(self.amortization_flag)}'),
             sep='\n'
         )
 

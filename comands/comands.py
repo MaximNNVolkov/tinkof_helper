@@ -1,9 +1,9 @@
 import app_logger as log
 from aiogram import types
-from defs.classes import User
+import aiogram.utils.markdown as fmt
 from aiogram.fsm.context import FSMContext
 from fsm.fsm_base import StateBonds
-
+from defs.classes import User
 
 log = log.get_logger(__name__)
 
@@ -11,13 +11,19 @@ log = log.get_logger(__name__)
 async def cmd_start(message: types.Message, state: FSMContext):
     u = User(message.from_user)
     log.info('кнопка старт. ' + u.info_user())
-    await message.answer('start')
-
+    await message.answer('Привет! Я бот, который поможет сравнить параметры облигаций. Для начала нажмите Меню.')
+    await message.delete()
 
 async def cmd_help(message: types.Message):
     u = User(message.from_user)
     log.info('кнопка хэлп ' + u.info_user())
-    await message.answer('OK help')
+    await message.answer(fmt.text(
+        fmt.text('Бот помогает сравнить параметры облигаций.'),
+        fmt.text('Для поиска бумаги необходимо выбрать ввести команду /bonds'),
+        fmt.text(''),
+        fmt.text('Обнаруженные ошибки и предложения по доработкам прошу направлять автору @MaximVolkov'),
+        sep='\n'))
+    await message.delete()
 
 
 async def user_msg(message: types.Message, state: FSMContext):

@@ -9,8 +9,8 @@ import pandas as pd
 
 class Bond:
     def __init__(self, name: str, ticker: str, uid: str, nominal: float, initial_nominal: float,
-                 coupon_quantity_per_year: int, maturity_date: str, aci_value: float, floating_coupon_flag: str,
-                 amortization_flag: str, risk_level: RiskLevel):
+                 coupon_quantity_per_year: int, maturity_date: str, aci_value: float, floating_coupon_flag: bool,
+                 amortization_flag: bool, risk_level: RiskLevel):
         self.name = name
         self.ticker = ticker
         self.uid = uid
@@ -22,17 +22,20 @@ class Bond:
         self.floating_coupon_flag = floating_coupon_flag
         self.amortization_flag = amortization_flag
         self.risk_level = risk_level
+        self.floating_coupon_flag = floating_coupon_flag
+        self.amortization_flag = amortization_flag
 
     def get_coupons(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
-            self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid, 
-from = datetime.datetime.now().date(), 
-to = self.maturity_date).events
+            self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid,
+                                                               from_=datetime.datetime.now(),
+                                                               to=self.maturity_date).events
 
     def get_bonds_event(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             self.bond_event = client.instruments.get_bond_events(request=GetBondEventsRequest(
                 instrument_id=self.uid, type=EventType.EVENT_TYPE_CALL,
+                from_=datetime.datetime.now(), to=self.maturity_date
             ))
             self.oferta = None
             df = pd.DataFrame(self.bond_event.events)

@@ -29,6 +29,7 @@ async def get_tickers(message: types.Message, state: FSMContext):
         await state.clear()
     else:
         instr = ac.get_bond_by_uid(uid=instruments.uid.iloc[0])
+        print(instr)
         b = Bond(name=instr.name,
                  ticker=instr.ticker,
                  uid=instr.uid,
