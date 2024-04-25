@@ -25,7 +25,9 @@ class Bond:
 
     def get_coupons(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
-            self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid).events
+            self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid, 
+from = datetime.datetime.now().date(), 
+to = self.maturity_date).events
 
     def get_bonds_event(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
