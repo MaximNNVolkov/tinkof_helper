@@ -36,5 +36,5 @@ async def bonds_yeld(message: types.Message, state: FSMContext):
     u = User(message.from_user)
     log.info(f'{u.info_user()} оценка бондов')
     await state.set_state(StateBonds.enter_ticker)
-    await message.answer('Пришлите тикер облигации')
+    await message.answer('Пришлите тикер облигации или ссылку на облигацию из приложения брокера.')
     await message.delete()
