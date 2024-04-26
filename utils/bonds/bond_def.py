@@ -11,26 +11,32 @@ from utils.bonds.card_bond import CardBond
 log = log.get_logger(__name__)
 
 
+def get_ticker(text: str) -> str:
+    log.info(f"Получен тикер, {text}")
+    ac = Accounts()
+    instruments = ac.get_instruments()
+    if text.startswith('$'):
+        if not(instruments[instruments['ticker'] == text[1:]].empty):
+            return instruments[instruments['ticker'] == text[1:]].uid.iloc[0]
+    elif text.startswith('https://'):
+        text = text.split('?')[0]
+        texts = text.split('/')
+        for t in texts:
+            if not(instruments[instruments['ticker'] == t].empty):
+                return instruments[instruments['ticker'] == t].uid.iloc[0]
+    return None
+
 async def get_tickers(message: types.Message, state: FSMContext):
     u = User(message.from_user)
     log.info(f"Получен тикер бумаги, {u.info_user()}")
-    ticker = message.text
-    if ticker.startswith('$'):
-        ticker = ticker[1:]
+    uid = get_ticker(message.text)
+    if uid is None:
+        await message.answer("Тикер не найден")
+        return await state.clear()
     ac = Accounts()
-    instruments = ac.get_instruments(ticker=ticker)
-    if str(type(instruments)) == "<class 'str'>":
-        await message.answer(instruments)
-        await message.answer('Введите правильный тикер')
-        await state.clear()
-    elif instruments.type.iloc[0] != 'bonds':
-        await message.answer(f'Тикер {ticker} не является облигацией')
-        await message.answer('Введите правильный тикер')
-        await state.clear()
-    else:
-        instr = ac.get_bond_by_uid(uid=instruments.uid.iloc[0])
-        print(instr)
-        b = Bond(name=instr.name,
+    print(uid)
+    instr = ac.get_bond_by_uid(uid=uid)
+    b = Bond(name=instr.name,
                  ticker=instr.ticker,
                  uid=instr.uid,
                  nominal=float(quotation_to_decimal(instr.nominal)),
@@ -41,11 +47,11 @@ async def get_tickers(message: types.Message, state: FSMContext):
                  floating_coupon_flag=instr.floating_coupon_flag,
                  amortization_flag=instr.amortization_flag,
                  risk_level=instr.risk_level)
-        b.get_coupons()
-        b.get_last_price()
-        b.get_bonds_event()
-        b.coupon_fix()
-        card_bond = CardBond(b)
-        await message.answer(card_bond.get_text(), disable_web_page_preview=True)
-        await message.delete()
-        await state.clear()
+    b.get_coupons()
+    b.get_last_price()
+    b.get_bonds_event()
+    b.coupon_fix()
+    card_bond = CardBond(b)
+    await message.answer(card_bond.get_text(), disable_web_page_preview=True)
+    await message.delete()
+    await state.clear()

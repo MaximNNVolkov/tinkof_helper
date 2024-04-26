@@ -50,11 +50,11 @@ class Accounts:
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             return client.instruments.bond_by(id=uid, id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_UID).instrument
 
-    def get_instruments(self, ticker: str):
+    def get_instruments(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             instruments: InstrumentsService = client.instruments
             l = []
-            for method in ['bonds', 'etfs']: # ,'shares', 'currencies', 'futures']:
+            for method in ['bonds']: #, 'etfs' ,'shares', 'currencies', 'futures']:
                 log.info(f'получение списка бумаг {method}')
                 try:
                     for item in getattr(instruments, method)().instruments:
@@ -73,7 +73,7 @@ class Accounts:
 
             df = DataFrame(l)
 
-            df = df[df['ticker'] == ticker]
+            # df = df[df['ticker'] == ticker]
             if df.empty:
-                return f"Нет тикера {ticker}"
+                return f"Нет тикера"
             return df
