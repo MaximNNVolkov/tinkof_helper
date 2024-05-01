@@ -6,24 +6,31 @@ from defs.classes import User
 from defs.accounts import Accounts
 from utils.bonds.bond import Bond
 from utils.bonds.card_bond import CardBond
+from utils.instruments.update_instruments import UpdateInstruments
 
 
 log = log.get_logger(__name__)
 
 
 def get_ticker(text: str) -> str:
-    log.info(f"Получен тикер, {text}")
-    ac = Accounts()
-    instruments = ac.get_instruments()
+    log.debug(f"Получен тикер, {text}")
+    ui = UpdateInstruments()
     if text.startswith('$'):
-        if not(instruments[instruments['ticker'] == text[1:]].empty):
-            return instruments[instruments['ticker'] == text[1:]].uid.iloc[0]
+        uid = ui.get_uid(ticker=text[1:])
+        if not(uid is None):
+            return uid
     elif text.startswith('https://'):
+        text = ''.join([text, '?'])
         text = text.split('?')[0]
         texts = text.split('/')
         for t in texts:
-            if not(instruments[instruments['ticker'] == t].empty):
-                return instruments[instruments['ticker'] == t].uid.iloc[0]
+            uid = ui.get_uid(ticker=t)
+            if not(uid is None):
+                return uid
+    else:
+        uid = ui.get_uid(ticker=text)
+        if not(uid is None):
+            return uid
     return None
 
 async def get_tickers(message: types.Message, state: FSMContext):
@@ -34,7 +41,6 @@ async def get_tickers(message: types.Message, state: FSMContext):
         await message.answer("Тикер не найден")
         return await state.clear()
     ac = Accounts()
-    print(uid)
     instr = ac.get_bond_by_uid(uid=uid)
     b = Bond(name=instr.name,
                  ticker=instr.ticker,
@@ -53,5 +59,6 @@ async def get_tickers(message: types.Message, state: FSMContext):
     b.coupon_fix()
     card_bond = CardBond(b)
     await message.answer(card_bond.get_text(), disable_web_page_preview=True)
+    log.debug(f"Карточка по бумаге {uid} отправлена пользователю {u.info_user()}")
     await message.delete()
     await state.clear()

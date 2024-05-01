@@ -1,11 +1,9 @@
 import app_logger as log
 from tinkoff.invest import Client
 from tinkoff.invest.constants import INVEST_GRPC_API
-from tinkoff.invest.exceptions import RequestError
 from tinkoff.invest import AccountStatus, InstrumentIdType
 from collections import namedtuple
 from config_reader import config
-from pandas import DataFrame
 
 
 log = log.get_logger(__name__)
@@ -49,28 +47,3 @@ class Accounts:
     def get_bond_by_uid(self, uid: str):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             return client.instruments.bond_by(id=uid, id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_UID).instrument
-
-    def get_instruments(self):
-        with Client(TOKEN, target=INVEST_GRPC_API) as client:
-            instruments: InstrumentsService = client.instruments
-            l = []
-            for method in ['bonds']: #, 'etfs' ,'shares', 'currencies', 'futures']:
-                log.info(f'получение списка бумаг {method}')
-                try:
-                    for item in getattr(instruments, method)().instruments:
-                        l.append({
-                            'ticker': item.ticker,
-                            'class_code': item.class_code,
-                            'figi': item.figi,
-                            'uid': item.uid,
-                            'type': method,
-                            'nmae': item.name
-                        })
-                except RequestError:
-                    log.error(RequestError.__dict__)
-                else:
-                    log.info(f'получено {len(l)} бумаг {method}')
-            df = DataFrame(l)
-            if df.empty:
-                return f"Нет тикера"
-            return df
