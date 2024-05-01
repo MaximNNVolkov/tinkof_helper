@@ -21,6 +21,7 @@ class CardBond:
         self.floating_coupon_flag = bond.floating_coupon_flag
         self.amortization_flag = bond.amortization_flag
 
+
     def get_param(self, param: bool) -> str:
         if param:
             return 'Да'
