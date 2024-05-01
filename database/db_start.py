@@ -4,6 +4,7 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import pandas as pd
 
 
 url_object = URL.create(
@@ -42,6 +43,18 @@ class Users(DeclarativeBase):
             'last_name': self.last_name,
             'user_name': self.user_name
         }
+
+
+class Instruments(DeclarativeBase):
+    __tablename__ = 'instruments'
+
+    date = Column(DateTime(), default=datetime.now)
+    ticker = Column(String, primary_key=True)
+    class_code = Column(String)
+    figi = Column(String)
+    uid = Column(String)
+    type = Column(String)
+    name = Column(String)
 
 
 def db_conn():

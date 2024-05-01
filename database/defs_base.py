@@ -1,6 +1,7 @@
 import app_logger as loger
-from .db_start import db_conn, Users
+from .db_start import db_conn, Users, Instruments
 import time
+import pandas as pd
 
 
 log = loger.get_logger(__name__)
@@ -31,3 +32,4 @@ def user_check(user):
     else:
         res = 'no_user'
     return res
+

@@ -64,16 +64,13 @@ class Accounts:
                             'figi': item.figi,
                             'uid': item.uid,
                             'type': method,
-                            'name': item.name
+                            'nmae': item.name
                         })
                 except RequestError:
                     log.error(RequestError.__dict__)
                 else:
                     log.info(f'получено {len(l)} бумаг {method}')
-
             df = DataFrame(l)
-
-            # df = df[df['ticker'] == ticker]
             if df.empty:
                 return f"Нет тикера"
             return df
