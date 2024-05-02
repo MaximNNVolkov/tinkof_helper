@@ -7,6 +7,7 @@ from defs.accounts import Accounts
 from utils.bonds.bond import Bond
 from utils.bonds.card_bond import CardBond
 from utils.instruments.update_instruments import UpdateInstruments
+from datetime import datetime
 
 
 log = log.get_logger(__name__)
@@ -53,6 +54,8 @@ async def get_tickers(message: types.Message, state: FSMContext):
                  floating_coupon_flag=instr.floating_coupon_flag,
                  amortization_flag=instr.amortization_flag,
                  risk_level=instr.risk_level)
+    if b.maturity_date.year == 1970:
+        b.maturity_date = datetime(year=2099, month=12, day=31)
     b.get_coupons()
     b.get_last_price()
     b.get_bonds_event()

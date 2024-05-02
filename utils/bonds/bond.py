@@ -62,4 +62,8 @@ class Bond:
                 date_ = self.oferta.date()
             else:
                 date_ = self.maturity_date.date()
-            self.annual_yield = self.profit / (date_ - datetime.datetime.now().date()).days * 365
+            if (date_ - datetime.datetime.now().date()).days == 0:
+                date_delta = 1
+            else:
+                date_delta = (date_ - datetime.datetime.now().date()).days
+            self.annual_yield = self.profit / date_delta * 365
