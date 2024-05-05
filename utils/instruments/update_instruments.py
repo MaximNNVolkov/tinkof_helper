@@ -50,7 +50,7 @@ class UpdateInstruments:
             log.debug(f'last_date {last_date}')
             return True
         log.debug(f'last_date {last_date.date}')
-        return last_date.date.date() < datetime.now().date() - timedelta(days=1)
+        return last_date.date.date() < datetime.now().date()
 
     def get_uid(self, ticker: str) -> str:
         conn = db_conn()

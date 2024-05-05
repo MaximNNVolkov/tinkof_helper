@@ -3,8 +3,13 @@ from tinkoff.invest.constants import INVEST_GRPC_API
 from tinkoff.invest.schemas import RiskLevel, GetBondEventsRequest, EventType
 from tinkoff.invest.utils import quotation_to_decimal
 from utils.token import TOKEN
+from utils.bonds.card_bond import CardBond
 import datetime
 import pandas as pd
+import app_logger as log
+
+
+log = log.get_logger(__name__)
 
 
 class Bond:
@@ -30,7 +35,8 @@ class Bond:
             self.cuopons = client.instruments.get_bond_coupons(instrument_id=self.uid,
                                                                from_=datetime.datetime.now(),
                                                                to=self.maturity_date).events
-
+#todo падает на облигациях со сроком погашения сегодня.
+#todo сдклать корректное отражение доходности по облигациям в Валюте, по ним номинал 1000$, купон в долларах а НКД в рублях
     def get_bonds_event(self):
         with Client(TOKEN, target=INVEST_GRPC_API) as client:
             self.bond_event = client.instruments.get_bond_events(request=GetBondEventsRequest(
@@ -47,23 +53,43 @@ class Bond:
             last_price = client.market_data.get_last_prices(instrument_id=[self.uid]).last_prices[0].price
             self.last_price = float(quotation_to_decimal(last_price)) / 100 * self.nominal
 
-    def coupon_fix(self):
+    def get_coupon_value(self):
         s = 0
         co = 0
+        self.last_coupon_date = 0
         for c in self.cuopons:
-            if c.fix_date.date() > datetime.datetime.now().date():
+            if (c.fix_date.date() > datetime.datetime.now().date()) & (float(quotation_to_decimal(c.pay_one_bond)) > 0):
                 s += float(quotation_to_decimal(c.pay_one_bond))
                 co += 1
-        if s > 0:
-            self.invest = (self.last_price + self.aci_value)
-            self.val = (self.nominal + s) - self.invest
-            self.profit = self.val / self.invest
-            if self.oferta:
-                date_ = self.oferta.date()
-            else:
-                date_ = self.maturity_date.date()
-            if (date_ - datetime.datetime.now().date()).days == 0:
-                date_delta = 1
-            else:
-                date_delta = (date_ - datetime.datetime.now().date()).days
-            self.annual_yield = self.profit / date_delta * 365
+                self.last_coupon_date = c.fix_date.date()
+        return s, co
+
+    def coupon_fixed(self, sum_coupons: float):
+        log.info(f'{self.ticker} fixed coupon')
+        self.invest = (self.last_price + self.aci_value)
+        self.val = (self.nominal + sum_coupons) - self.invest
+        self.profit = self.val / self.invest
+        if self.oferta:
+            date_ = self.oferta.date()
+        else:
+            date_ = self.maturity_date.date()
+        if (date_ - datetime.datetime.now().date()).days == 0:
+            date_delta = 1
+        else:
+            date_delta = (date_ - datetime.datetime.now().date()).days
+        self.annual_yield = self.profit / date_delta * 365
+
+    def coupon_floating(self, sum_coupons: float):
+        log.info(f'{self.ticker} floating coupon')
+        self.invest = (self.last_price + self.aci_value)
+        self.val = (self.nominal + sum_coupons) - self.invest
+        self.profit = self.val / self.invest
+        if self.oferta:
+            date_ =self.last_coupon_date
+        else:
+            date_ = self.last_coupon_date
+        if (date_ - datetime.datetime.now().date()).days == 0:
+            date_delta = 1
+        else:
+            date_delta = (date_ - datetime.datetime.now().date()).days
+        self.annual_yield = self.profit / date_delta * 365
