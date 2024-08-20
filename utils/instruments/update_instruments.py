@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import app_logger as log
 from database.db_start import Instruments, db_conn
 import pandas as pd

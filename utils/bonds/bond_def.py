@@ -7,15 +7,16 @@ from defs.accounts import Accounts
 from utils.bonds.bond import Bond
 from utils.bonds.card_bond import CardBond
 from utils.instruments.update_instruments import UpdateInstruments
-from datetime import datetime
+import datetime
 
 from database.db_start import db_conn, Instruments
+from database.defs_base import get_bond
 
 
 log = log.get_logger(__name__)
 
 
-def get_ticker(text: str) -> str:
+def get_ticker_from_text(text: str) -> str:
     log.debug(f"Получен тикер, {text}")
     ui = UpdateInstruments()
     if text.startswith('$'):
@@ -36,32 +37,33 @@ def get_ticker(text: str) -> str:
             return uid
     return None
 
+
 async def get_tickers(message: types.Message, state: FSMContext):
     u = User(message.from_user)
     log.info(f"Получен тикер бумаги, {u.info_user()}")
-    uid = get_ticker(message.text)
+    uid = get_ticker_from_text(message.text)
     if uid is None:
         await message.answer("Тикер не найден")
         return await state.clear()
-    ac = Accounts()
-    instr = ac.get_bond_by_uid(uid=uid)
+    instr = get_bond(uid=uid)
     b = Bond(name=instr.name,
-                 ticker=instr.ticker,
-                 uid=instr.uid,
-                 nominal=float(quotation_to_decimal(instr.nominal)),
-                 initial_nominal=float(quotation_to_decimal(instr.initial_nominal)),
-                 coupon_quantity_per_year=instr.coupon_quantity_per_year,
-                 maturity_date=instr.maturity_date,
-                 aci_value=float(quotation_to_decimal(instr.aci_value)),
-                 floating_coupon_flag=instr.floating_coupon_flag,
-                 amortization_flag=instr.amortization_flag,
-                 risk_level=instr.risk_level)
+             ticker=instr.ticker,
+             uid=instr.uid,
+             nominal=float(instr.nominal),
+             initial_nominal=float(instr.initial_nominal),
+             coupon_quantity_per_year=instr.coupon_quantity_per_year,
+             maturity_date=datetime.datetime.combine(instr.maturity_date, datetime.time()),
+             aci_value=float(instr.aci_value),
+             floating_coupon_flag=instr.floating_coupon_flag,
+             amortization_flag=instr.amortization_flag,
+             risk_level=instr.risk_level,
+             currency=instr.currency
+             )
     if b.maturity_date.year == 1970:
-        b.maturity_date = datetime(year=2099, month=12, day=31)
-    b.get_coupons()
+        b.maturity_date = datetime.datetime(year=2099, month=12, day=31)
     b.get_last_price()
     b.get_bonds_event()
-    s, c = b.get_coupon_value()
+    s = b.get_coupon_value()
     if s > 0:
         if b.floating_coupon_flag:
             b.coupon_floating(sum_coupons=s)
@@ -86,7 +88,7 @@ async def all_tickers(message: types.Message, state: FSMContext):
     conn = db_conn()
     instrs = conn.query(Instruments).all()
     for instr in instrs:
-        uid = get_ticker(instr.ticker)
+        uid = get_ticker_from_text(instr.ticker)
         if uid is None:
             await message.answer("Тикер не найден")
             return await state.clear()
@@ -98,14 +100,14 @@ async def all_tickers(message: types.Message, state: FSMContext):
                  nominal=float(quotation_to_decimal(instr.nominal)),
                  initial_nominal=float(quotation_to_decimal(instr.initial_nominal)),
                  coupon_quantity_per_year=instr.coupon_quantity_per_year,
-                 maturity_date=instr.maturity_date,
+                 maturity_date=instr.maturity_date.date(),
                  aci_value=float(quotation_to_decimal(instr.aci_value)),
                  floating_coupon_flag=instr.floating_coupon_flag,
                  amortization_flag=instr.amortization_flag,
-                 risk_level=instr.risk_level)
+                 risk_level=instr.risk_level,
+                 currency=instr.currency)
         if b.maturity_date.year == 1970:
-            b.maturity_date = datetime(year=2099, month=12, day=31)
-        b.get_coupons()
+            b.maturity_date = datetime.datetime(year=2099, month=12, day=31)
         b.get_last_price()
         b.get_bonds_event()
         s, c = b.get_coupon_value()

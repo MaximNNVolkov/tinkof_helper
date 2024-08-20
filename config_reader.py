@@ -11,3 +11,10 @@ class Settings(BaseSettings):
 
 
 config = Settings()
+
+
+class UserParams():
+    def __init__(self):
+        self.only_maturity = True
+        self.res_count = 5
+        pass

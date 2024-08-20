@@ -22,7 +22,6 @@ class CardBond:
         self.amortization_flag = bond.amortization_flag
         self.last_coupon_date = bond.last_coupon_date
 
-
     def get_param(self, param: bool) -> str:
         if param:
             return 'Да'
@@ -30,9 +29,9 @@ class CardBond:
 
     def get_text_fixed_coupon(self) -> fmt.text:
         if self.oferta:
-            date_ = fmt.text(f'Дата оферты: {self.oferta.date()}')
+            date_ = fmt.text(f'Дата оферты: {self.oferta}')
         else:
-            date_ = fmt.text(f'Дата погашения: {self.maturity_date.date()}')
+            date_ = fmt.text(f'Дата погашения: {self.maturity_date}')
         if self.get_risk() == 0:
             risk_text = fmt.text(f'Уровень риска не определен.')
         else:

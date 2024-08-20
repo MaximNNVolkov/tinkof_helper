@@ -4,6 +4,8 @@ import aiogram.utils.markdown as fmt
 from aiogram.fsm.context import FSMContext
 from fsm.fsm_base import StateBonds
 from defs.classes import User
+from defs.find_top_yield import find_top_yield
+
 
 log = log.get_logger(__name__)
 
@@ -13,6 +15,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
     log.info('кнопка старт. ' + u.info_user())
     await message.answer('Привет! Я бот, который поможет сравнить параметры облигаций. Для начала нажмите Меню.')
     await message.delete()
+
 
 async def cmd_help(message: types.Message):
     u = User(message.from_user)
@@ -37,4 +40,11 @@ async def bonds_yeld(message: types.Message, state: FSMContext):
     log.info(f'{u.info_user()} оценка бондов')
     await state.set_state(StateBonds.enter_ticker)
     await message.answer('Пришлите тикер облигации или ссылку на облигацию из приложения брокера.')
+    await message.delete()
+
+
+async def update_prices(message: types.Message, state: FSMContext):
+    u = User(message.from_user)
+    log.info(f'{u.info_user()} обновление цен и доходностей')
+    await find_top_yield(message, state)
     await message.delete()
